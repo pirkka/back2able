@@ -24,16 +24,22 @@ get "/" do
   "<head>" + \
   "<meta charset='UTF-8'>" + \
   "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" + \
-  "<title>Ableton Live Version Converter</title>" + \
+  "<title>back2able - ableton live project file downgrading utility</title>" + \
+  "<style>" + \
+  "body { margin: 0; padding: 0; }" + \
+  ".content { max-width: 800px; margin: 0 auto; padding: 20px; background: #B7B7B7; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }" + \
+  "</style>" + \
   "</head>" + \
-  "<body style='font-family: Verdana, Arial, sans-serif; font-size: 0.8em; padding: 20px; background: #ccc;'>" + \
-  "<h1>Welcome to Ableton Live version converter!</h1>" + \
-  "<p>Please upload your Ableton Live 12 file (.als) to convert it to Ableton Live 11.</p>" + \
+  "<body style='font-family: Manual, Avenir, Verdana, Arial, sans-serif; font-size: 2.5em; padding: 20px; background: #8F8F8F; text-align: center;'>" + \
+  "<div class='content'>" + \
+  "<img src='/back2able.png' style='max-width: 800px;'>" + \
+  "<p>Please upload an Ableton Live 12 file (.als) to convert it to Ableton Live 11.</p>" + \
   "<p>If the resulting file does not open in Live 11, please take a screencap of the error and send to odjpirkka@gmail.com.</p>" + \
   "<form action='/convert' method='post' enctype='multipart/form-data'>" + \
   "<input type='file' name='file' accept='.als'>" + \
   "<input type='submit' value='Convert'>" + \
   "</form>" + \
+  "</div>" + \
   "</body>" + \
   "</html>"
 end
@@ -72,7 +78,7 @@ post "/convert" do
 
       ouput_string = doc.to_s
       ouput_string = ouput_string.gsub("Value='true'", "Value='1'")
-      ouput_string = ouput_string .gsub("Value='false'", "Value='0'")
+      ouput_string = ouput_string.gsub("Value='false'", "Value='0'")
 
       File.open(output_file, 'w') do |f|
         f.write(ouput_string)

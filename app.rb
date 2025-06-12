@@ -7,6 +7,19 @@ set :bind, "0.0.0.0"
 port = ENV["PORT"] || "8080"
 set :port, port
 
+configure :production do
+  set :bind, '0.0.0.0'
+  set :port, ENV['PORT'] || 8080
+  
+  # Trust proxy headers from Cloud Run
+  set :protection, origin_whitelist: ['https://back2able.odj.fi']
+  
+  # If you need to check if the original request was HTTPS
+  before do
+    @https = request.env['HTTP_X_FORWARDED_PROTO'] == 'https'
+  end
+end
+
 # SERVER DEPLOYMENT:
 # To deploy this script as a server, you can use Google Cloud Run or any other cloud service that supports Ruby applications.
 # The script can be run as a web service that accepts file uploads and returns the converted .als file.

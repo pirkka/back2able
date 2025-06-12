@@ -40,7 +40,7 @@ get "/" do
   "<title>back2able - ableton live project file downgrading utility</title>" + \
   "<style>" + \
   "body { margin: 0; padding: 0; }" + \
-  ".content { max-width: 800px; margin: 0 auto; padding: 20px; background: #B7B7B7; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }" + \
+  ".content { max-width: 800px; margin: 0 auto; padding: 20px; background: #B7B7B7; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);} input {font-size: 0.5em;} form {background-color: #ccc; padding: 0.5em; border-radius: 0.4em;}" + \
   "</style>" + \
   "</head>" + \
   "<body style='font-family: Manual, Avenir, Verdana, Arial, sans-serif; font-size: 2.5em; padding: 20px; background: #8F8F8F; text-align: center;'>" + \

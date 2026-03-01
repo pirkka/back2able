@@ -47,11 +47,11 @@ get "/" do
   "<div class='content'>" + \
   "<img src='/back2able.png' style='max-width: 800px;'>" + \
   "<p>Please upload an Ableton Live 12 file (.als) to convert it to Ableton Live 11.</p>" + \
-  "<p>If the resulting file does not open in Live 11, please take a screencap of the error and send to odjpirkka@gmail.com.</p>" + \
   "<form action='/convert' method='post' enctype='multipart/form-data'>" + \
   "<input type='file' name='file' accept='.als'>" + \
   "<input type='submit' value='Convert'>" + \
   "</form>" + \
+  "<p>If the resulting file does not open in Live 11, please take a screencap of the error and send to odjpirkka@gmail.com.</p>" + \
   "</div>" + \
   "</body>" + \
   "</html>"

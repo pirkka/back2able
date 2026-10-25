@@ -7,6 +7,7 @@
   var progress = document.getElementById("progress");
   var elapsed = document.getElementById("elapsed");
   var status = document.getElementById("status");
+  var resetButton = document.getElementById("reset-button");
 
   var timer = null;
 
@@ -42,6 +43,8 @@
     status.textContent = "";
     elapsed.textContent = "0";
     progress.hidden = false;
+    form.hidden = true;
+    resetButton.hidden = true;
     submitButton.disabled = true;
     fileInput.disabled = true;
 
@@ -60,6 +63,19 @@
     progress.hidden = true;
     submitButton.disabled = false;
     fileInput.disabled = false;
+    resetButton.hidden = false;
+    resetButton.focus();
+  }
+
+  function resetUi() {
+    status.hidden = true;
+    status.textContent = "";
+    resetButton.hidden = true;
+    fileInput.value = "";
+    form.hidden = false;
+    submitButton.disabled = false;
+    fileInput.disabled = false;
+    fileInput.focus();
   }
 
   function outputFilename(response, source) {
@@ -91,6 +107,8 @@
       URL.revokeObjectURL(url);
     }, 60000);
   }
+
+  resetButton.addEventListener("click", resetUi);
 
   form.addEventListener("submit", function (event) {
     event.preventDefault();

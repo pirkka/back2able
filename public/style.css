@@ -89,6 +89,11 @@ input:disabled {
   color: #7f1d1d;
 }
 
+#reset-button {
+  cursor: pointer;
+  margin-top: 0.6em;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .spinner {
     animation: none;

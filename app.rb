@@ -1,7 +1,7 @@
 require "sinatra"
-require 'rexml/document'
 require 'pathname'
 require 'zlib'
+require_relative 'als_converter'
 
 set :bind, "0.0.0.0"
 port = ENV["PORT"] || "8080"
@@ -76,30 +76,11 @@ post "/convert" do
       rescue Zlib::GzipFile::Error => e
         xml_content = als_file.read
       end
-      doc = REXML::Document.new(xml_content)
+      output_string = AlsConverter.convert(xml_content)
 
-      # EDIT THE XML TO WORK WITH ABLETON LIVE 11
-      doc.root.attributes['MajorVersion'] = '5'
-      doc.root.attributes['MinorVersion'] = '11.0_11300'
-      doc.root.attributes['Creator'] = 'Ableton Live 11.3.40b2'
-      doc.root.attributes['Revision'] = '97b2aa4f9e88ecec40a7dc6f0e9c707631d5a5c7'
-
-      # remove MidiEditorLaneModel elements
-      doc.elements.each('//MidiEditorLaneModel') do |element|
-        element.parent.delete_element(element)
+      File.open(output_file, 'wb') do |f|
+        f.write(output_string)
       end
-
-      ouput_string = doc.to_s
-      ouput_string = ouput_string.gsub("Value='true'", "Value='1'")
-      ouput_string = ouput_string.gsub("Value='false'", "Value='0'")
-
-      File.open(output_file, 'w') do |f|
-        f.write(ouput_string)
-      end
-
-      #Zlib::GzipWriter.open('output_file') do |gz|
-      #  gz.write doc.to_s
-      #end
 
       send_file output_file, filename: File.basename(output_file), type: 'application/xml'
     rescue REXML::ParseException => e

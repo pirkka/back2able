@@ -22,8 +22,9 @@
     var generic = GENERIC_ERRORS[response.status] || "Something went wrong.";
     var trimmed = (text || "").trim();
 
-    // The proxy answers with an HTML error page, which is not worth showing.
-    if (!trimmed || trimmed.indexOf("<") !== -1) {
+    // The proxy answers with an HTML error page or a terse body of its own,
+    // neither of which is worth showing.
+    if (!trimmed || trimmed.indexOf("<") !== -1 || trimmed.toLowerCase() === "request too large") {
       return generic;
     }
 

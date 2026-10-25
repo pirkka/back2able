@@ -113,7 +113,7 @@ end
 
 get "/" do
   headers "Cache-Control" => "no-cache"
-  send_file File.join(settings.public_folder, "index.html")
+  erb :index
 end
 
 get "/up" do
@@ -153,6 +153,12 @@ post "/convert" do
 end
 
 helpers do
+  # The asset URLs carry the deploy version, so a deploy always gets fresh
+  # JavaScript and CSS instead of whatever Cloudflare has cached.
+  def asset_version
+    ENV["KAMAL_VERSION"] || "dev"
+  end
+
   def convert(tempfile, filename)
     output_name = filename.sub(/\.als\z/i, '_L11.als')
 

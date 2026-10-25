@@ -29,6 +29,7 @@ COPY --from=build /usr/local/bundle /usr/local/bundle
 COPY Gemfile Gemfile.lock ./
 COPY app.rb ablegrade.rb als_converter.rb ./
 COPY public ./public
+COPY views ./views
 
 RUN useradd --create-home --uid 1000 app && chown -R app:app /app
 USER app

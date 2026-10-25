@@ -10,6 +10,26 @@
 
   var timer = null;
 
+  var GENERIC_ERRORS = {
+    413: "That file is too large.",
+    429: "Too many conversions right now, please try again shortly.",
+    503: "The server is busy, please try again in a minute.",
+    502: "The server could not be reached, please try again shortly.",
+    504: "The conversion took too long, please try again with a smaller project."
+  };
+
+  function errorMessage(response, text) {
+    var generic = GENERIC_ERRORS[response.status] || "Something went wrong.";
+    var trimmed = (text || "").trim();
+
+    // The proxy answers with an HTML error page, which is not worth showing.
+    if (!trimmed || trimmed.indexOf("<") !== -1) {
+      return generic;
+    }
+
+    return trimmed;
+  }
+
   function setStatus(message, kind) {
     status.textContent = message;
     status.className = "status " + kind;
@@ -91,7 +111,7 @@
       .then(function (response) {
         if (!response.ok) {
           return response.text().then(function (text) {
-            throw new Error(text.trim() || "Server error (" + response.status + ")");
+            throw new Error(errorMessage(response, text));
           });
         }
 

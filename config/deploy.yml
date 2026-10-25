@@ -7,7 +7,13 @@ image: pirkka/back2able
 # Deploy to these servers.
 servers:
   web:
-    - one
+    hosts:
+      - one
+    options:
+      # The conversion is memory hungry: cap the container so it cannot take
+      # the whole box down, and leave a core for the other apps on it.
+      memory: 2g
+      cpus: 1.5
 
 # Kamal deploys over SSH; the box is reachable as `one` (89.167.108.217).
 ssh:
@@ -24,6 +30,11 @@ proxy:
   response_timeout: 120
   healthcheck:
     path: /up
+  buffering:
+    requests: true
+    responses: true
+    # Reject oversized uploads at the proxy, before the app parses them.
+    max_request_body: 26214400
 
 # Where you keep your container images.
 registry:
@@ -36,6 +47,18 @@ env:
   clear:
     RACK_ENV: production
     PORT: "8080"
+    # Origins allowed to post to /convert.
+    ALLOWED_ORIGINS: "https://back2able.odj.fi,http://back2able.odj.fi"
+    # Largest accepted upload, and largest accepted project after decompressing.
+    MAX_UPLOAD_MB: "20"
+    MAX_XML_MB: "30"
+    # Conversions running at the same time, and how long a request may wait
+    # for a free slot before it is rejected.
+    MAX_CONCURRENT: "1"
+    QUEUE_WAIT_SECONDS: "60"
+    # Conversions started per window, per server.
+    RATE_LIMIT_COUNT: "30"
+    RATE_LIMIT_WINDOW_SECONDS: "600"
 
 # The VPS is amd64, this machine is arm64.
 builder:

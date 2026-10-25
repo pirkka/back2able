@@ -1,16 +1,38 @@
-# Use the official Ruby image.
-# https://hub.docker.com/_/ruby
-FROM ruby:3.2-buster
+# Build stage: compile native gem extensions (thin -> eventmachine).
+FROM ruby:3.3-bookworm AS build
 
-# Install production dependencies.
-WORKDIR /usr/src/app
+ENV BUNDLE_DEPLOYMENT=true \
+    BUNDLE_PATH=/usr/local/bundle \
+    BUNDLE_WITHOUT=test
+
+WORKDIR /app
+
+RUN apt-get update -qq && \
+    apt-get install -y --no-install-recommends build-essential libssl-dev && \
+    rm -rf /var/lib/apt/lists/*
+
 COPY Gemfile Gemfile.lock ./
-ENV BUNDLE_FROZEN=true
-RUN gem install bundler && bundle config set --local without 'test'
+RUN bundle install && rm -rf /usr/local/bundle/cache
 
-# Copy local code to the container image.
-COPY . ./
-RUN bundle install
+# Runtime stage.
+FROM ruby:3.3-slim-bookworm
 
-# Run the web service on container startup.
-CMD ["ruby", "./app.rb"]
+ENV BUNDLE_DEPLOYMENT=true \
+    BUNDLE_PATH=/usr/local/bundle \
+    BUNDLE_WITHOUT=test \
+    RACK_ENV=production \
+    PORT=8080
+
+WORKDIR /app
+
+COPY --from=build /usr/local/bundle /usr/local/bundle
+COPY Gemfile Gemfile.lock ./
+COPY app.rb ablegrade.rb als_converter.rb ./
+COPY public ./public
+
+RUN useradd --create-home --uid 1000 app && chown -R app:app /app
+USER app
+
+EXPOSE 8080
+
+CMD ["bundle", "exec", "ruby", "./app.rb"]

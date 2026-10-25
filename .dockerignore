@@ -1,5 +1,11 @@
+.git
+.gitignore
+.kamal
+.ruby-lsp
+.DS_Store
+config
 Dockerfile
-README.md
-.ruby-version
-.bundle/
-vendor/
+.dockerignore
+deploy.sh
+output_file
+*.als

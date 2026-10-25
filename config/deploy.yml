@@ -1,0 +1,46 @@
+# Name of your application. Used to uniquely configure containers.
+service: back2able
+
+# Name of the container image (use your-user/app-name on external registries).
+image: pirkka/back2able
+
+# Deploy to these servers.
+servers:
+  web:
+    - one
+
+# Kamal deploys over SSH; the box is reachable as `one` (89.167.108.217).
+ssh:
+  user: root
+
+# Enable SSL auto certification via Let's Encrypt and allow for multiple apps on a single web server.
+# If used with Cloudflare, set encryption mode in SSL/TLS setting to "Full" to enable CF-to-app encryption.
+proxy:
+  ssl: false
+  host: back2able.odj.fi
+  ssl_redirect: false
+  forward_headers: true
+  app_port: 8080
+  response_timeout: 120
+  healthcheck:
+    path: /up
+
+# Where you keep your container images.
+registry:
+  server: ghcr.io
+  username: pirkka
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+env:
+  clear:
+    RACK_ENV: production
+    PORT: "8080"
+
+# The VPS is amd64, this machine is arm64.
+builder:
+  arch: amd64
+
+aliases:
+  logs: app logs -f
+  shell: app exec --interactive --reuse "bash"

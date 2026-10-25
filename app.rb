@@ -1,5 +1,4 @@
 require "sinatra"
-require 'pathname'
 require 'zlib'
 require_relative 'als_converter'
 
@@ -10,25 +9,15 @@ set :port, port
 configure :production do
   set :bind, '0.0.0.0'
   set :port, ENV['PORT'] || 8080
-  
-  # Trust proxy headers from Cloud Run
+
+  # Only accept cross-origin form posts from our own site. The app runs behind
+  # Cloudflare and kamal-proxy, both of which forward the original Origin header.
   set :protection, origin_whitelist: ['https://back2able.odj.fi']
-  
-  # If you need to check if the original request was HTTPS
-  before do
-    @https = request.env['HTTP_X_FORWARDED_PROTO'] == 'https'
-  end
 end
 
-# SERVER DEPLOYMENT:
-# To deploy this script as a server, you can use Google Cloud Run or any other cloud service that supports Ruby applications.
-# The script can be run as a web service that accepts file uploads and returns the converted .als file.
-# 
-# For Google Cloud Run, you would typically create a Dockerfile that sets up the Ruby environment, installs dependencies, and runs this script.
-# You can use a web framework like Sinatra or Rails to handle HTTP requests and responses.
-# 
-# here is the command to deploy in terminal: 'gcloud run deploy'
-# here is the way to run the server locally: 'rerun ruby app.rb'
+# DEPLOYMENT:
+# The app is deployed as a Docker container to a Hetzner VPS with Kamal.
+# See config/deploy.yml and deploy.sh. Run it locally with: 'bundle exec ruby app.rb'
 
 get "/" do
   content_type :html
@@ -57,13 +46,17 @@ get "/" do
   "</html>"
 end
 
+get "/up" do
+  "ok"
+end
+
 post "/convert" do
   tempfile = params['file'][:tempfile]
   filename = params['file'][:filename]
 
   if filename && filename.end_with?('.als') && tempfile
     als_file = tempfile
-    output_file = filename.gsub('.als', '_L11.als')
+    output_name = filename.sub(/\.als\z/i, '_L11.als')
 
     begin
       xml_content = nil
@@ -74,15 +67,15 @@ post "/convert" do
         gz.close
       end 
       rescue Zlib::GzipFile::Error => e
+        # Not gzipped: rewind, the failed header read consumed some bytes.
+        als_file.rewind if als_file.respond_to?(:rewind)
         xml_content = als_file.read
       end
       output_string = AlsConverter.convert(xml_content)
 
-      File.open(output_file, 'wb') do |f|
-        f.write(output_string)
-      end
-
-      send_file output_file, filename: File.basename(output_file), type: 'application/xml'
+      content_type 'application/xml'
+      attachment File.basename(output_name)
+      output_string
     rescue REXML::ParseException => e
       status 400
       "Error parsing XML: #{e.message}"

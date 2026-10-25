@@ -7,6 +7,10 @@ set :bind, "0.0.0.0"
 port = ENV["PORT"] || "8080"
 set :port, port
 
+# Cloudflare caches .js and .css for four hours by default, which would leave
+# visitors with an outdated page after a deploy. Always revalidate instead.
+set :static_cache_control, :no_cache
+
 # Cross-origin form posts are rejected explicitly. Rack::Protection's origin
 # check cannot do this: Sinatra sets the reaction to :drop_session and the app
 # has no sessions, so a rejected request would still be served.
@@ -108,6 +112,7 @@ end
 # See config/deploy.yml and deploy.sh. Run it locally with: 'bundle exec ruby app.rb'
 
 get "/" do
+  headers "Cache-Control" => "no-cache"
   send_file File.join(settings.public_folder, "index.html")
 end
 

@@ -9,6 +9,16 @@ bundle install
 bundle exec ruby app.rb   # http://localhost:8080
 ```
 
+## Web UI
+
+The page lives in `public/` (`index.html`, `app.js`, `style.css`). Submitting the
+form posts the file to `/convert` with `fetch`, shows a spinner with an elapsed
+timer while the server converts, and then starts the download automatically.
+
+`/convert` answers with the converted project as a gzipped `.als` file (`.als`
+files are gzipped XML), built in memory. Nothing is written to disk on the
+server.
+
 ## Deployment
 
 The app is deployed as a Docker container to a Hetzner VPS (`one` = 89.167.108.217)

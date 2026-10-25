@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>back2able - ableton live project file downgrading utility</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="content">
+    <img src="/back2able.png" alt="back2able" class="logo">
+
+    <p>Please upload an Ableton Live 12 file (.als) to convert it to Ableton Live 11.</p>
+
+    <form id="convert-form" action="/convert" method="post" enctype="multipart/form-data">
+      <input id="file-input" type="file" name="file" accept=".als">
+      <input id="submit-button" type="submit" value="Convert">
+    </form>
+
+    <div id="progress" class="progress" hidden>
+      <div class="spinner" aria-hidden="true"></div>
+      <p class="progress-text">Converting&hellip; <span id="elapsed">0</span>s</p>
+      <p class="progress-hint">Large projects can take up to a minute.</p>
+    </div>
+
+    <p id="status" class="status" role="status" aria-live="polite" hidden></p>
+
+    <p>If the resulting file does not open in Live 11, please take a screencap of the error and send to odjpirkka@gmail.com.</p>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

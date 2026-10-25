@@ -1,4 +1,5 @@
 require "sinatra"
+require 'stringio'
 require 'zlib'
 require_relative 'als_converter'
 
@@ -20,30 +21,7 @@ end
 # See config/deploy.yml and deploy.sh. Run it locally with: 'bundle exec ruby app.rb'
 
 get "/" do
-  content_type :html
-  "<!DOCTYPE html>" + \
-  "<html lang='en'>" + \
-  "<head>" + \
-  "<meta charset='UTF-8'>" + \
-  "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" + \
-  "<title>back2able - ableton live project file downgrading utility</title>" + \
-  "<style>" + \
-  "body { margin: 0; padding: 0; }" + \
-  ".content { max-width: 800px; margin: 0 auto; padding: 20px; background: #B7B7B7; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);} input {font-size: 0.5em;} form {background-color: #ccc; padding: 0.5em; border-radius: 0.4em;}" + \
-  "</style>" + \
-  "</head>" + \
-  "<body style='font-family: Manual, Avenir, Verdana, Arial, sans-serif; font-size: 2.5em; padding: 20px; background: #8F8F8F; text-align: center;'>" + \
-  "<div class='content'>" + \
-  "<img src='/back2able.png' style='max-width: 800px;'>" + \
-  "<p>Please upload an Ableton Live 12 file (.als) to convert it to Ableton Live 11.</p>" + \
-  "<form action='/convert' method='post' enctype='multipart/form-data'>" + \
-  "<input type='file' name='file' accept='.als'>" + \
-  "<input type='submit' value='Convert'>" + \
-  "</form>" + \
-  "<p>If the resulting file does not open in Live 11, please take a screencap of the error and send to odjpirkka@gmail.com.</p>" + \
-  "</div>" + \
-  "</body>" + \
-  "</html>"
+  send_file File.join(settings.public_folder, "index.html")
 end
 
 get "/up" do
@@ -51,8 +29,9 @@ get "/up" do
 end
 
 post "/convert" do
-  tempfile = params['file'][:tempfile]
-  filename = params['file'][:filename]
+  upload = params['file']
+  tempfile = upload && upload[:tempfile]
+  filename = upload && upload[:filename]
 
   if filename && filename.end_with?('.als') && tempfile
     als_file = tempfile
@@ -73,9 +52,10 @@ post "/convert" do
       end
       output_string = AlsConverter.convert(xml_content)
 
-      content_type 'application/xml'
+      # Ableton .als files are gzipped XML, so serve the compressed form.
+      content_type 'application/octet-stream'
       attachment File.basename(output_name)
-      output_string
+      gzip(output_string)
     rescue REXML::ParseException => e
       status 400
       "Error parsing XML: #{e.message}"
@@ -86,5 +66,18 @@ post "/convert" do
   else
     status 400
     "No file uploaded or file is invalid."
+  end
+end
+
+helpers do
+  # Gzip in memory, with a fixed timestamp so the same input always gives the
+  # same output.
+  def gzip(data)
+    buffer = StringIO.new
+    writer = Zlib::GzipWriter.new(buffer)
+    writer.mtime = 0
+    writer.write(data)
+    writer.close
+    buffer.string
   end
 end
